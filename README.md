@@ -1,2 +1,4 @@
 # Blackjack
-Blackjack on python with ascii art
+Blackjack on Python with ascii art
+
+personal Python projects
