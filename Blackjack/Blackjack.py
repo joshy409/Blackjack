@@ -57,20 +57,30 @@ class Dealer():
         mycard = []
         self.mycard = mycard
         self.name = 'Dealer'
+        
 
     def hit(self, deck):
         self.mycard.append(deck.deck.pop())
 
     #combine myhand with something else?
-    #hide dealer's 2nd card until dealer's play or black jack
-    def myhand(self):
+    def myhand(self,hidecard=0):
         sum = 0
-        print(self.name)
-        for cards in self.mycard:
-            sum += Dealer.values[cards[1]]
-            print(cards)
+        print('\n' + self.name)
+        if hidecard == 1:
+            for cards in self.mycard:
+                sum += Dealer.values[cards[1]]
+            print(self.mycard[0])
+            print('(HIDDEN CARD)')
 
-        print(sum)
+        else:
+            for cards in self.mycard:
+                sum += Dealer.values[cards[1]]
+                print(cards)
+            if sum == 21:
+                print('Blakcjack!')
+            else:
+                print(sum)
+
         return sum
 
     #TODO Ace implementation
@@ -91,8 +101,8 @@ class Player(Dealer):
     def __init__(self,balance=0):
         self.balance = balance
         sum = 0
-        self.sum = sum
         mycard =[]
+        self.sum = sum
         self.mycard = mycard
         self.name = 'Player'
 
@@ -107,7 +117,7 @@ class Player(Dealer):
 
 def hit_or_stay():
     while True:   
-        move = input("Hit? or Stay? Enter 'h' or 's: ")
+        move = input("\nHit? or Stay? Enter 'h' or 's: ")
         
         if move.lower().startswith('h'):
             return True
@@ -118,7 +128,7 @@ def hit_or_stay():
             continue
         break
 
-def dealer17(ptotal,dtotal):
+def dealer_hit_or_stay(ptotal,dtotal):
     if dtotal < 17:
         return True
     elif ptotal > 17 and ptotal > dtotal:
@@ -129,6 +139,23 @@ def dealer17(ptotal,dtotal):
 def replay():
     
     return input("Do you want to play again? Enter 'y' or 'n': ").lower().startswith('y')
+
+def check_winner(ptotal,dtotal):
+
+    if ptotal > dtotal and ptotal == 21 or dtotal > 21:
+        print('Player won with Blackjack!')
+    elif dtotal > ptotal and dtotal == 21 or ptotal > 21:
+        print('Dealer won with Blackjack!')
+    elif ptotal > 21 and dtotal != 21:
+        print('Dealer won because Player busted!')
+    elif dtotal > 21 and ptotal != 21:
+        print('Player won because Dealer busted!')
+    elif dtotal == ptotal and dtotal >= 17:
+        print('Tie!')
+    elif ptotal > dtotal:
+        print('Player won with',ptotal)
+    else:
+        print('Dealer won with',dtotal)
 
 while True:
     #create deck, player, dealer
@@ -142,40 +169,53 @@ while True:
     player.hit(new_deck)
     dealer.hit(new_deck)
 
-    player.myhand()
-    dtotal = dealer.myhand()
+    ptotal = player.myhand()
+    dtotal = dealer.myhand(1)
+    dtotal = 21
 
+
+    #player turn
     while True and dtotal != 21:
-        if hit_or_stay():
+        if  ptotal < 21 and  hit_or_stay():
             player.hit(new_deck)
             ptotal = player.myhand()
+
+            #check for player bust
             if player.counthand():
                 continue
             else:
-                print('BUST!')
                 break
         else:
-            player.myhand()
+            dealer.myhand()
             break
 
+    #dealer turn
     while True:
-        if ptotal > 21:
+        if ptotal > 21 or dtotal == 21:
+            player.myhand()
+            dealer.myhand()
+            check_winner(ptotal,dtotal) 
             break
         else:
-            if dealer17(ptotal,dtotal):
+            if dealer_hit_or_stay(ptotal,dtotal):
                 dealer.hit(new_deck)
                 dtotal = dealer.myhand()
+
+                #check for dealer bust
                 if dealer.counthand():
                     continue
-                else:
-                    print('BUST!')
+                else:        
+                    print(ptotal)
+                    player.myhand()
+                    dealer.myhand()
+                    check_winner(ptotal,dtotal)
                     break
             else:
+                player.myhand()
                 dealer.myhand()
+                check_winner(ptotal,dtotal)
                 break
     
-   #TODO announce winner
-            
 
 
     if not replay():
