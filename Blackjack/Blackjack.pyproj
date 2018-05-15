@@ -24,9 +24,6 @@
     <Compile Include="Blackjack.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="module1.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="printcard.py">
       <SubType>Code</SubType>
     </Compile>

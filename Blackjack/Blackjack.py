@@ -40,7 +40,6 @@ class Deck():
         suits = ('Hearts', 'Spades', 'Clubs', 'Diamonds')
         ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace')
         
-        
         for suit in suits:
             for rank in ranks:
                 self.deck.append((suit,rank))
@@ -68,6 +67,7 @@ class Dealer():
     def hit(self, deck):
         self.mycard.append(deck.deck.pop())
 
+
     def showcard(self,hide=0):
         myhand = []
         for cards in self.mycard:
@@ -77,6 +77,7 @@ class Dealer():
         else:
             print(ascii_version_of_hidden_card(myhand))
    
+
     def hand(self,hidecard=0):
         sum = 0
         print('\n' + self.name)
@@ -114,6 +115,7 @@ class Player(Dealer):
         self.name = 'Player'
         self.bet = 0.0
 
+
     def betting(self):
         while True:
             try:
@@ -129,6 +131,8 @@ class Player(Dealer):
                     print("You can't bet more than what you have!")
                     continue
 
+
+
     def pay(self,winner=''):
         if winner == 'pB':
             self.balance += self.bet * 2.5
@@ -136,6 +140,8 @@ class Player(Dealer):
             self.balance += self.bet * 2
         elif winner == 't':
             self.balance += self.bet
+
+
 
 def hit_or_stay():
     while True:   
@@ -149,6 +155,8 @@ def hit_or_stay():
             print("Invalid input")
             continue
         break
+
+
 
 def dealer_hit_or_stay(ptotal,dtotal):
     if dtotal < 17:
@@ -183,6 +191,8 @@ def check_winner(ptotal,dtotal):
         print('\nDealer won with',dtotal)
 
 
+
+#play game
 print('Welcome to BlackJack! Get as close to 21 as you can without going over!\n\
     Dealer hits until she reaches 17. Aces count as 1 or 11.\n')
 player = Player()
@@ -201,7 +211,13 @@ while True:
     dealer.hit(new_deck)
 
     ptotal = player.hand()
+    if ptotal > 21:
+        player.ace_check()
+        ptotal = player.hand()
     dtotal = dealer.hand(1)
+    if dtotal > 21:
+        dealer.ace_check()
+        dtotal = dealer.hand()
     winner = ''
 
     #player turn
