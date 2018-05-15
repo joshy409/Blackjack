@@ -77,7 +77,7 @@ class Dealer():
                 sum += Dealer.values[cards[1]]
                 print(cards)
             if sum == 21:
-                print('Blakcjack!')
+                print('Blackjack!')
             else:
                 print(sum)
 
@@ -143,20 +143,21 @@ def replay():
 def check_winner(ptotal,dtotal):
 
     if ptotal > dtotal and ptotal == 21 or dtotal > 21:
-        print('Player won with Blackjack!')
+        print('\nPlayer won with Blackjack!')
     elif dtotal > ptotal and dtotal == 21 or ptotal > 21:
-        print('Dealer won with Blackjack!')
+        print('\nDealer won with Blackjack!')
     elif ptotal > 21 and dtotal != 21:
-        print('Dealer won because Player busted!')
+        print('\nDealer won because Player busted!')
     elif dtotal > 21 and ptotal != 21:
-        print('Player won because Dealer busted!')
+        print('\nPlayer won because Dealer busted!')
     elif dtotal == ptotal and dtotal >= 17:
-        print('Tie!')
+        print('\nTie!')
     elif ptotal > dtotal:
-        print('Player won with',ptotal)
+        print('\nPlayer won with',ptotal)
     else:
-        print('Dealer won with',dtotal)
+        print('\nDealer won with',dtotal)
 
+#TODO: implement betting ability for player
 while True:
     #create deck, player, dealer
     new_deck = Deck()
@@ -171,7 +172,6 @@ while True:
 
     ptotal = player.myhand()
     dtotal = dealer.myhand(1)
-    dtotal = 21
 
 
     #player turn
@@ -181,7 +181,7 @@ while True:
             ptotal = player.myhand()
 
             #check for player bust
-            if player.counthand():
+            if ptotal < 21:
                 continue
             else:
                 break
@@ -202,10 +202,9 @@ while True:
                 dtotal = dealer.myhand()
 
                 #check for dealer bust
-                if dealer.counthand():
+                if dtotal < 21:
                     continue
                 else:        
-                    print(ptotal)
                     player.myhand()
                     dealer.myhand()
                     check_winner(ptotal,dtotal)
