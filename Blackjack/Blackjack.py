@@ -34,13 +34,13 @@ class Deck():
         self.deck = []
         suits = ('Hearts', 'Spades', 'Clubs', 'Diamonds')
         ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
-        values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8, 'Nine':9, 'Ten':10, 'Jack':10, 'Queen':10, 'King':10, 'Ace':11}
-    
+        
         for suit in suits:
             for rank in ranks:
                 self.deck.append((suit,rank))
         
         random.shuffle(self.deck)
+
 
     def __str__(self):
         return("{}".format(self.deck)) 
@@ -51,19 +51,19 @@ class Deck():
 
 class Dealer():
     
-    values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8, 'Nine':9, 'Ten':10, 'Jack':10, 'Queen':10, 'King':10, 'Ace':11}
+    values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8, 'Nine':9, 'Ten':10, 'Jack':10, 'Queen':10, 'King':10, 'Ace':11, 'ace':1}
 
     def __init__(self):
         mycard = []
         self.mycard = mycard
         self.name = 'Dealer'
-        
+
 
     def hit(self, deck):
         self.mycard.append(deck.deck.pop())
 
-    #combine myhand with something else?
-    def myhand(self,hidecard=0):
+   
+    def hand(self,hidecard=0):
         sum = 0
         print('\n' + self.name)
         if hidecard == 1:
@@ -83,37 +83,49 @@ class Dealer():
 
         return sum
 
-    #TODO Ace implementation
-    def counthand(self):
-        sum = 0
-        for cards in self.mycard:
-            sum += Dealer.values[cards[1]]
-        
-        if sum <= 21 :
-            return True
-        else:
+    def ace_check(self):
+        try:
+            ace_index = [ace[1] for ace in self.mycard].index('Ace')
+        except:
             return False
+        else:
+            self.mycard[ace_index] = (self.mycard[ace_index][0],'ace')
+            return True
+        
             
 
 
 class Player(Dealer):
 
-    def __init__(self,balance=0):
+    def __init__(self,balance=1000):
         self.balance = balance
-        sum = 0
         mycard =[]
-        self.sum = sum
         self.mycard = mycard
         self.name = 'Player'
+        self.bet = 0.0
 
-    def win(self,bet):
-        self.balance += bet
+    def betting(self):
+        while True:
+            try:
+                self.bet = (float(input('Place your bet! : ')))
+            except:
+                print('Please put in a amount!')
+                continue
+            else:        
+                if self.balance - self.bet >= 0:
+                    self.balance -= self.bet
+                    break
+                else:
+                    print("You can't bet more than what you have!")
+                    continue
 
-    def lose(self):
-        self.balance -= bet
-
-    def blackjack(self):
-        self.balance += bet*1.5
+    def pay(self,winner=''):
+        if winner == 'pB':
+            self.balance += self.bet * 2.5
+        elif winner == 'p':
+            self.balance += self.bet * 2
+        elif winner == 't':
+            self.balance += self.bet
 
 def hit_or_stay():
     while True:   
@@ -142,27 +154,34 @@ def replay():
 
 def check_winner(ptotal,dtotal):
 
-    if ptotal > dtotal and ptotal == 21 or dtotal > 21:
+    if ptotal == 21 and (ptotal > dtotal or dtotal > 21):
         print('\nPlayer won with Blackjack!')
-    elif dtotal > ptotal and dtotal == 21 or ptotal > 21:
+        return 'pB'
+    elif dtotal == 21 and (dtotal > ptotal or ptotal > 21):
         print('\nDealer won with Blackjack!')
     elif ptotal > 21 and dtotal != 21:
         print('\nDealer won because Player busted!')
     elif dtotal > 21 and ptotal != 21:
         print('\nPlayer won because Dealer busted!')
+        return 'p'
     elif dtotal == ptotal and dtotal >= 17:
         print('\nTie!')
+        return 't'
     elif ptotal > dtotal:
         print('\nPlayer won with',ptotal)
     else:
         print('\nDealer won with',dtotal)
 
 #TODO: implement betting ability for player
+
+player = Player()
 while True:
     #create deck, player, dealer
     new_deck = Deck()
-    player = Player()
     dealer = Dealer()
+
+    print('Your balance is:',player.balance)
+    player.betting()
 
     #deal two cards to each
     player.hit(new_deck)
@@ -170,54 +189,69 @@ while True:
     player.hit(new_deck)
     dealer.hit(new_deck)
 
-    ptotal = player.myhand()
-    dtotal = dealer.myhand(1)
-
+    ptotal = player.hand()
+    dtotal = dealer.hand(1)
+    winner = ''
 
     #player turn
     while True and dtotal != 21:
         if  ptotal < 21 and  hit_or_stay():
             player.hit(new_deck)
-            ptotal = player.myhand()
+            ptotal = player.hand()
 
             #check for player bust
-            if ptotal < 21:
-                continue
-            else:
+            if ptotal > 21:
+                #if there is an Ace count it as 1 and if there are no more Aces then it is a bust
+                if player.ace_check():
+                    ptotal = player.hand()
+                    continue
                 break
+            else:
+                continue
         else:
-            dealer.myhand()
+            dealer.hand()
             break
 
     #dealer turn
     while True:
         if ptotal > 21 or dtotal == 21:
-            player.myhand()
-            dealer.myhand()
-            check_winner(ptotal,dtotal) 
+            player.hand()
+            dealer.hand()
+            winner = check_winner(ptotal,dtotal) 
             break
         else:
             if dealer_hit_or_stay(ptotal,dtotal):
                 dealer.hit(new_deck)
-                dtotal = dealer.myhand()
-
+                dtotal = dealer.hand()
                 #check for dealer bust
-                if dtotal < 21:
-                    continue
+                if dtotal > 21:
+                    if dealer.ace_check():
+                        dtotal = dealer.hand()
+                        continue
+                    else:
+                        player.hand()
+                        dealer.hand()
+                        winner = check_winner(ptotal,dtotal)
+                        break
                 else:        
-                    player.myhand()
-                    dealer.myhand()
-                    check_winner(ptotal,dtotal)
-                    break
+                    dealer.ace_check()
+                    continue
             else:
-                player.myhand()
-                dealer.myhand()
-                check_winner(ptotal,dtotal)
+                player.hand()
+                dealer.hand()
+                winner = check_winner(ptotal,dtotal)
                 break
     
+    player.pay(winner)
+    player.mycard = []
+    
+    if player.balance == 0:
+        print('You are out of money!')
+        if replay():
+            player.balance = 1000
+        else:
+            break
 
-
-    if not replay():
-        break
+    
 
     
