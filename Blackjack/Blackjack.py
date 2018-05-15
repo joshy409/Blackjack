@@ -28,12 +28,18 @@
 #12. Ask the Player if they'd like to play again
 
 import random
+
+from printcard import Card
+from printcard import ascii_version_of_card
+from printcard import ascii_version_of_hidden_card
+
 class Deck():
 
     def __init__(self):
         self.deck = []
         suits = ('Hearts', 'Spades', 'Clubs', 'Diamonds')
-        ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
+        ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace')
+        
         
         for suit in suits:
             for rank in ranks:
@@ -51,7 +57,7 @@ class Deck():
 
 class Dealer():
     
-    values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8, 'Nine':9, 'Ten':10, 'Jack':10, 'Queen':10, 'King':10, 'Ace':11, 'ace':1}
+    values = {'2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'Jack':10, 'Queen':10, 'King':10, 'Ace':11, 'ACE':1}
 
     def __init__(self):
         mycard = []
@@ -62,26 +68,30 @@ class Dealer():
     def hit(self, deck):
         self.mycard.append(deck.deck.pop())
 
+    def showcard(self,hide=0):
+        myhand = []
+        for cards in self.mycard:
+            myhand.append(Card(cards[0],cards[1]))
+        if hide == 0:
+            print(ascii_version_of_card(myhand))
+        else:
+            print(ascii_version_of_hidden_card(myhand))
    
     def hand(self,hidecard=0):
         sum = 0
         print('\n' + self.name)
-        if hidecard == 1:
-            for cards in self.mycard:
-                sum += Dealer.values[cards[1]]
-            print(self.mycard[0])
-            print('(HIDDEN CARD)')
-
+       
+        for cards in self.mycard:
+            sum += Dealer.values[cards[1]]
+        Dealer.showcard(self,hidecard)
+        if sum == 21:
+            print(self.name + "'s hand = Blackjack!")
         else:
-            for cards in self.mycard:
-                sum += Dealer.values[cards[1]]
-                print(cards)
-            if sum == 21:
-                print('Blackjack!')
-            else:
-                print(sum)
+            print(self.name + "'s hand =",sum)
 
         return sum
+    
+
 
     def ace_check(self):
         try:
@@ -89,7 +99,7 @@ class Dealer():
         except:
             return False
         else:
-            self.mycard[ace_index] = (self.mycard[ace_index][0],'ace')
+            self.mycard[ace_index] = (self.mycard[ace_index][0],'ACE')
             return True
         
             
@@ -165,15 +175,16 @@ def check_winner(ptotal,dtotal):
         print('\nPlayer won because Dealer busted!')
         return 'p'
     elif dtotal == ptotal and dtotal >= 17:
-        print('\nTie!')
+        print('\nDealer pushed!')
         return 't'
     elif ptotal > dtotal:
         print('\nPlayer won with',ptotal)
     else:
         print('\nDealer won with',dtotal)
 
-#TODO: implement betting ability for player
 
+print('Welcome to BlackJack! Get as close to 21 as you can without going over!\n\
+    Dealer hits until she reaches 17. Aces count as 1 or 11.\n')
 player = Player()
 while True:
     #create deck, player, dealer
@@ -246,10 +257,11 @@ while True:
     player.mycard = []
     
     if player.balance == 0:
-        print('You are out of money!')
+        print('You are out of money!\n')
         if replay():
             player.balance = 1000
         else:
+            print('Thanks for playing!')
             break
 
     
